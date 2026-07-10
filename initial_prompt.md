@@ -1,7 +1,8 @@
+````markdown
 ## Plan: MVP für lokalen Schul-3D-Druckserver
 
 **TL;DR:**  
-Baue eine lokale Webanwendung auf dem Raspberry Pi, die den kompletten schulgeeigneten Workflow abbildet: Schüler laden STL-Dateien hoch, Lehrer prüfen und geben frei, Druckaufträge werden in einer Warteschlange verwaltet, und Drucke werden manuell über das Webinterface gestartet. Für den MVP würde ich **FastAPI + PostgreSQL + React + shadcn/ui + OrcaSlicer CLI + nativen Bambu-LAN-Treiber** verwenden. Der Bambu Lab A1 Mini wird nicht über OctoPrint gesteuert, sondern über lokales LAN/Developer-Mode-Protokoll, da Bambu LAN Mode lokale Kommunikation ohne Cloud ermöglicht und Developer Mode MQTT/FTP öffnet. [\[wiki.bambulab.com\]](https://wiki.bambulab.com/en/knowledge-sharing/enable-lan-mode), [\[wiki.bambulab.com\]](https://wiki.bambulab.com/en/knowledge-sharing/enable-developer-mode)
+Baue eine lokale Webanwendung auf dem Raspberry Pi, die den kompletten schulgeeigneten Workflow abbildet: User laden STL-Dateien hoch, Lehrer prüfen und geben frei, Druckaufträge werden in einer Warteschlange verwaltet, und Drucke werden manuell über das Webinterface gestartet. Für den MVP würde ich **FastAPI + PostgreSQL + React + shadcn/ui + OrcaSlicer CLI + nativen Bambu-LAN-Treiber** verwenden. Der Bambu Lab A1 Mini wird nicht über OctoPrint gesteuert, sondern über lokales LAN/Developer-Mode-Protokoll, da Bambu LAN Mode lokale Kommunikation ohne Cloud ermöglicht und Developer Mode MQTT/FTP öffnet. https://wiki.bambulab.com/en/knowledge-sharing/enable-lan-mode, https://wiki.bambulab.com/en/knowledge-sharing/enable-developer-mode
 
 ***
 
@@ -12,9 +13,9 @@ Baue eine lokale Webanwendung auf dem Raspberry Pi, die den kompletten schulgeei
 Ein lokales, schulgeeignetes 3D-Druck-Management-System mit:
 
 * Login
-* Rollen: `ADMIN`, `STUDENT`
-* Schüler-Upload von `.stl`
-* Schülerübersicht eigener Druckaufträge
+* Rollen: `ADMIN`, `USER`
+* User-Upload von `.stl`
+* Userübersicht eigener Druckaufträge
 * Lehrer-Adminbereich
 * Freigabeprozess
 * Manuell startbare Druckwarteschlange
@@ -50,7 +51,7 @@ Begründung:
 * Läuft auf Raspberry Pi 5 problemlos
 * Gute Migrationen mit Alembic
 
-Alembic ist das etablierte Migrationstool für SQLAlchemy und versioniert Datenbankschema-Änderungen sauber. [\[alembic.sq...lchemy.org\]](https://alembic.sqlalchemy.org/en/latest/)
+Alembic ist das etablierte Migrationstool für SQLAlchemy und versioniert Datenbankschema-Änderungen sauber. https://alembic.sqlalchemy.org/en/latest/
 
 ## ORM/Migrationen
 
@@ -72,13 +73,13 @@ Begründung:
 
 **OrcaSlicer CLI**
 
-OrcaSlicer besitzt eine CLI-/Headless-Nutzung für automatisiertes Slicing; wichtige Optionen wie `--load-settings`, `--load-filaments`, `--slice` und `--export-3mf` werden in der Community bereits für automatisierte Workflows genutzt. [\[github.com\]](https://github.com/OrcaSlicer/OrcaSlicer/discussions/1603), [\[github.com\]](https://github.com/OrcaSlicer/OrcaSlicer/discussions/8593)
+OrcaSlicer besitzt eine CLI-/Headless-Nutzung für automatisiertes Slicing; wichtige Optionen wie `--load-settings`, `--load-filaments`, `--slice` und `--export-3mf` werden in der Community bereits für automatisierte Workflows genutzt. https://github.com/OrcaSlicer/OrcaSlicer/discussions/1603, https://github.com/OrcaSlicer/OrcaSlicer/discussions/8593
 
 ## Druckeranbindung MVP
 
 **Native Bambu-LAN-Anbindung**
 
-Der Bambu Lab A1 Mini soll nicht über OctoPrint angebunden werden. Bambu LAN Mode erlaubt lokale Kommunikation im Netzwerk; Developer Mode öffnet MQTT, Live Stream und FTP für lokale Steuerung. [\[wiki.bambulab.com\]](https://wiki.bambulab.com/en/knowledge-sharing/enable-lan-mode), [\[wiki.bambulab.com\]](https://wiki.bambulab.com/en/knowledge-sharing/enable-developer-mode)
+Der Bambu Lab A1 Mini soll nicht über OctoPrint angebunden werden. Bambu LAN Mode erlaubt lokale Kommunikation im Netzwerk; Developer Mode öffnet MQTT, Live Stream und FTP für lokale Steuerung. https://wiki.bambulab.com/en/knowledge-sharing/enable-lan-mode, https://wiki.bambulab.com/en/knowledge-sharing/enable-developer-mode
 
 ***
 
@@ -101,7 +102,7 @@ FastAPI Backend
                 │
                 ▼
         Bambu Lab A1 Mini im lokalen WLAN
-```
+````
 
 ***
 
@@ -121,7 +122,7 @@ schoolprint-updater
 
 Für den MVP können Backend und Slicer auch in einem Container laufen. Langfristig ist ein separater Slicer-Worker sinnvoll.
 
-Podman Compose kann Compose-Workloads über externe Compose-Provider wie `podman-compose` ausführen. [\[docs.podman.io\]](https://docs.podman.io/en/latest/markdown/podman-compose.1.html)
+Podman Compose kann Compose-Workloads über externe Compose-Provider wie `podman-compose` ausführen. <https://docs.podman.io/en/latest/markdown/podman-compose.1.html>
 
 ## Volumes
 
@@ -151,7 +152,7 @@ Optional:
 
 ## Enthalten im MVP
 
-### Schüler
+### User
 
 * Login
 * STL-Datei hochladen
@@ -174,7 +175,7 @@ Optional:
 ### Admin/Lehrer
 
 * Login
-* Schülerkonten anlegen
+* Userkonten anlegen
 * Admin-Konten anlegen
 * Passwörter setzen/zurücksetzen
 * Druckaufträge prüfen
@@ -298,7 +299,7 @@ Rollen:
 
 ```text
 ADMIN
-STUDENT
+USER
 ```
 
 Für den MVP reicht ein geteilter Admin-Lehreraccount, aber das Modell sollte mehrere Admins unterstützen.
@@ -429,7 +430,7 @@ PREVIEW
 METADATA_JSON
 ```
 
-Für Bambu ist `.gcode.3mf` als Zielartefakt sinnvoll, da Bambu-Workflows typischerweise 3MF/G-Code-Container nutzen. OrcaSlicer kann über CLI Workflows zum Export von 3MF/G-Code-Artefakten genutzt werden. [\[github.com\]](https://github.com/OrcaSlicer/OrcaSlicer/discussions/8593)
+Für Bambu ist `.gcode.3mf` als Zielartefakt sinnvoll, da Bambu-Workflows typischerweise 3MF/G-Code-Container nutzen. OrcaSlicer kann über CLI Workflows zum Export von 3MF/G-Code-Artefakten genutzt werden. <https://github.com/OrcaSlicer/OrcaSlicer/discussions/8593>
 
 ***
 
@@ -549,9 +550,9 @@ Aufgaben:
 API:
 
 ```text
-POST /api/student/uploads
-GET  /api/student/jobs
-GET  /api/student/jobs/{id}
+POST /api/user/uploads
+GET  /api/user/jobs
+GET  /api/user/jobs/{id}
 ```
 
 Validierungen:
@@ -601,7 +602,7 @@ Aufgaben:
 * Position berechnen
 * Reihenfolge ändern
 * Nur Admin darf umsortieren
-* Schüler sehen nur eigene Position
+* User sehen nur eigene Position
 
 API:
 
@@ -646,7 +647,7 @@ Freigabe löst Slicing aus.
 Nach erfolgreichem Slicing wird der Auftrag in die Queue aufgenommen.
 ```
 
-OrcaSlicer sollte über feste Profile betrieben werden, nicht über frei editierbare Schüler-/Lehrereinstellungen. OrcaSlicer unterstützt CLI-Optionen zum Laden von Settings und Filament-Profilen. [\[github.com\]](https://github.com/OrcaSlicer/OrcaSlicer/discussions/1603), [\[printago.io\]](https://printago.io/blog/orca-slicer-cli-reference)
+OrcaSlicer sollte über feste Profile betrieben werden, nicht über frei editierbare User-/Lehrereinstellungen. OrcaSlicer unterstützt CLI-Optionen zum Laden von Settings und Filament-Profilen. <https://github.com/OrcaSlicer/OrcaSlicer/discussions/1603>, <https://printago.io/blog/orca-slicer-cli-reference>
 
 ***
 
@@ -699,9 +700,9 @@ Aufgaben:
 
 Technische Grundlage:
 
-* Bambu LAN Mode ermöglicht lokale Kommunikation ohne Internet. [\[wiki.bambulab.com\]](https://wiki.bambulab.com/en/knowledge-sharing/enable-lan-mode)
-* Developer Mode öffnet bei A-Series-Geräten lokale Steuerungsmöglichkeiten wie MQTT und FTP. [\[wiki.bambulab.com\]](https://wiki.bambulab.com/en/knowledge-sharing/enable-developer-mode)
-* Community-Dokumentationen beschreiben lokale MQTT-Verbindungen gegen den Drucker mit IP, Port `8883`, Username `bblp` und Access Code. [\[github.com\]](https://github.com/Doridian/OpenBambuAPI/blob/main/mqtt.md)
+* Bambu LAN Mode ermöglicht lokale Kommunikation ohne Internet. <https://wiki.bambulab.com/en/knowledge-sharing/enable-lan-mode>
+* Developer Mode öffnet bei A-Series-Geräten lokale Steuerungsmöglichkeiten wie MQTT und FTP. <https://wiki.bambulab.com/en/knowledge-sharing/enable-developer-mode>
+* Community-Dokumentationen beschreiben lokale MQTT-Verbindungen gegen den Drucker mit IP, Port `8883`, Username `bblp` und Access Code. <https://github.com/Doridian/OpenBambuAPI/blob/main/mqtt.md>
 
 MVP-Umfang:
 
@@ -745,7 +746,7 @@ Empfehlung:
 
 * Metadaten zunächst behalten
 * Datei löschen
-* Schülername optional nach längerer Zeit anonymisieren
+* Username optional nach längerer Zeit anonymisieren
 
 ***
 
@@ -777,7 +778,7 @@ Updater-Service
   -> podman compose up -d
 ```
 
-Podman Compose ist als Compose-kompatibles Werkzeug für Podman-Setups vorgesehen. [\[docs.podman.io\]](https://docs.podman.io/en/latest/markdown/podman-compose.1.html), [\[github.com\]](https://github.com/containers/podman-compose)
+Podman Compose ist als Compose-kompatibles Werkzeug für Podman-Setups vorgesehen. <https://docs.podman.io/en/latest/markdown/podman-compose.1.html>, <https://github.com/containers/podman-compose>
 
 ***
 
@@ -788,10 +789,10 @@ Podman Compose ist als Compose-kompatibles Werkzeug für Podman-Setups vorgesehe
 ```text
 /login
 
-/student
-/student/jobs
-/student/jobs/:id
-/student/upload
+/user
+/user/jobs
+/user/jobs/:id
+/user/upload
 
 /admin
 /admin/users
@@ -805,7 +806,7 @@ Podman Compose ist als Compose-kompatibles Werkzeug für Podman-Setups vorgesehe
 
 ***
 
-## 10.2 Schüleransicht
+## 10.2 Useransicht
 
 ### Dashboard
 
@@ -881,7 +882,7 @@ Tabelle:
 
 ```text
 Titel
-Schüler
+User
 Klasse
 Datei
 Eingereicht am
@@ -964,7 +965,7 @@ Frontend-Version
 ## Empfohlener MVP-Workflow
 
 ```text
-1. Schüler lädt STL hoch
+1. User lädt STL hoch
 2. Job bekommt Status SUBMITTED
 3. Lehrer prüft Modell
 4. Lehrer klickt Freigeben
@@ -1003,7 +1004,7 @@ Access Code notieren
 Statische IP vergeben
 ```
 
-Bambu beschreibt LAN Mode als lokale Betriebsart, bei der der Drucker im LAN mit dem Slicer kommunizieren kann, ohne dass ein Internetzugang erforderlich ist. [\[wiki.bambulab.com\]](https://wiki.bambulab.com/en/knowledge-sharing/enable-lan-mode)
+Bambu beschreibt LAN Mode als lokale Betriebsart, bei der der Drucker im LAN mit dem Slicer kommunizieren kann, ohne dass ein Internetzugang erforderlich ist. <https://wiki.bambulab.com/en/knowledge-sharing/enable-lan-mode>
 
 ## In SchoolPrint
 
@@ -1035,12 +1036,12 @@ POST /api/auth/logout
 GET  /api/auth/me
 ```
 
-## Student
+## User
 
 ```text
-POST /api/student/uploads
-GET  /api/student/jobs
-GET  /api/student/jobs/{job_id}
+POST /api/user/uploads
+GET  /api/user/jobs
+GET  /api/user/jobs/{job_id}
 ```
 
 ## Admin Users
@@ -1104,7 +1105,7 @@ GET  /api/admin/updates/status
 
 # 14. Rollen- und Rechtekonzept
 
-## STUDENT darf
+## USER darf
 
 ```text
 Eigene Jobs sehen
@@ -1112,13 +1113,13 @@ Eigene STL hochladen
 Eigene Jobdetails ansehen
 ```
 
-## STUDENT darf nicht
+## USER darf nicht
 
 ```text
 Druck starten
-Andere Schüler sehen
+Andere User sehen
 Queue verändern
-Dateien anderer Schüler herunterladen
+Dateien anderer User herunterladen
 Systemdaten sehen
 Drucker konfigurieren
 ```
@@ -1157,7 +1158,7 @@ Retention konfigurieren
 
 ## Besonders wichtig beim Slicer
 
-Der Slicer verarbeitet von Schülern hochgeladene Dateien. Deshalb:
+Der Slicer verarbeitet von Usern hochgeladene Dateien. Deshalb:
 
 ```text
 Input-Dateien in isoliertes Arbeitsverzeichnis
@@ -1215,16 +1216,16 @@ Aufgaben:
 Verifikation:
 
 * Admin kann sich einloggen
-* Admin kann Schüler anlegen
-* Schüler kann sich einloggen
-* Schüler sieht keine Admin-Routen
+* Admin kann User anlegen
+* User kann sich einloggen
+* User sieht keine Admin-Routen
 * Passwort-Reset funktioniert
 
 ***
 
-## Phase 2: Upload und Schülerbereich
+## Phase 2: Upload und Userbereich
 
-Ziel: Schüler können STL-Dateien hochladen und eigene Jobs sehen.
+Ziel: User können STL-Dateien hochladen und eigene Jobs sehen.
 
 Aufgaben:
 
@@ -1233,16 +1234,16 @@ Aufgaben:
 3. Lokalen Upload-Speicher konfigurieren
 4. Upload-API bauen
 5. Datei-Validierung bauen
-6. Schüler-Dashboard bauen
-7. Schüler-Jobliste bauen
+6. User-Dashboard bauen
+7. User-Jobliste bauen
 8. Jobdetails bauen
 
 Verifikation:
 
-* Schüler lädt `.stl` hoch
+* User lädt `.stl` hoch
 * Datei liegt lokal im Upload-Verzeichnis
 * DB enthält Metadaten
-* Schüler sieht nur eigene Jobs
+* User sieht nur eigene Jobs
 * Admin sieht alle Jobs
 
 ***
@@ -1265,7 +1266,7 @@ Verifikation:
 * Job startet als `SUBMITTED`
 * Admin kann freigeben
 * Admin kann ablehnen
-* Schüler sieht neuen Status
+* User sieht neuen Status
 * AuditLog enthält Aktion
 
 ***
@@ -1288,7 +1289,7 @@ Verifikation:
 * Freigegebene Jobs können in Queue
 * Positionen sind eindeutig
 * Admin kann Reihenfolge ändern
-* Schüler sieht eigene Position
+* User sieht eigene Position
 * Reorder bleibt nach Neustart erhalten
 
 ***
@@ -1383,7 +1384,7 @@ Verifikation:
 
 * Testjob mit alter Datei wird gelöscht
 * DB bleibt konsistent
-* Schüler sieht abgelaufenen Status
+* User sieht abgelaufenen Status
 * Admin sieht Löschprotokoll
 
 ***
@@ -1428,8 +1429,8 @@ Verifikation:
 ## Frontend Tests
 
 * Login-Seite rendert
-* Schüler-Upload funktioniert gegen Mock API
-* Schüler sieht eigene Jobs
+* User-Upload funktioniert gegen Mock API
+* User sieht eigene Jobs
 * Admin sieht Jobliste
 * Queue-Reorder UI funktioniert
 * Admin kann Druck starten
@@ -1439,13 +1440,13 @@ Verifikation:
 MVP-E2E mit DummyDriver:
 
 ```text
-Admin erstellt Schüler
-Schüler lädt STL hoch
+Admin erstellt User
+User lädt STL hoch
 Admin gibt frei
 Slicer erzeugt Artefakt
 Admin startet Druck
 DummyDriver beendet Druck
-Schüler sieht FINISHED
+User sieht FINISHED
 ```
 
 ## Hardware-Test mit Bambu A1 Mini
@@ -1468,7 +1469,7 @@ Abschluss prüfen
 Wenn du schnell einen nutzbaren Prototypen möchtest, würde ich so vorgehen:
 
 1. Backend + DB + Auth
-2. Schülerupload
+2. Userupload
 3. Adminfreigabe
 4. Queue
 5. DummyDriver
@@ -1510,9 +1511,9 @@ Damit du den kompletten Schulworkflow bauen und testen kannst, bevor du dich mit
 
 * Layout/Shell
 * Login
-* Schülerdashboard
+* Userdashboard
 * Uploadseite
-* Schüler-Jobliste
+* User-Jobliste
 * Admin-Dashboard
 * User-Management
 * Job-Freigabeansicht
@@ -1537,7 +1538,7 @@ Damit du den kompletten Schulworkflow bauen und testen kannst, bevor du dich mit
 * Bambu-A1-Mini-Setup
 * Sicherheitsmodell
 * Admin-Handbuch
-* Schüler-Kurzanleitung
+* User-Kurzanleitung
 
 ***
 
@@ -1600,10 +1601,10 @@ Begründung:
 
 Der MVP ist fertig, wenn:
 
-1. Admin kann Schüler anlegen.
-2. Schüler kann sich einloggen.
-3. Schüler kann STL-Datei hochladen.
-4. Schüler sieht eigenen Auftrag und Status.
+1. Admin kann User anlegen.
+2. User kann sich einloggen.
+3. User kann STL-Datei hochladen.
+4. User sieht eigenen Auftrag und Status.
 5. Admin sieht offene Druckanfragen.
 6. Admin kann Auftrag freigeben oder ablehnen.
 7. Freigegebener Auftrag wird gesliced.
@@ -1611,7 +1612,7 @@ Der MVP ist fertig, wenn:
 9. Admin kann Queue sortieren.
 10. Admin kann Druck manuell auf Bambu A1 Mini starten.
 11. Admin sieht Druckerstatus und Druckfortschritt.
-12. Schüler sieht „fertig gedruckt am Datum“.
+12. User sieht „fertig gedruckt am Datum“.
 13. Alte Dateien werden nach Retention gelöscht.
 14. System läuft lokal per Podman auf Raspberry Pi.
 15. Update-Check gegen GitHub Releases funktioniert.
@@ -1630,3 +1631,6 @@ Meine Favoriten:
 5. **PrintRoom**
 
 Ich würde **SchoolPrint** nehmen: kurz, verständlich, international verwendbar.
+
+```
+```
