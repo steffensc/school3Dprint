@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_current_user
 from app.core.config import get_settings
 from app.core.rate_limit import client_key, login_rate_limiter
-from app.core.security import create_access_token, verify_password
+from app.core.security import create_access_token, generate_csrf_token, verify_password
 from app.db.session import get_db
 from app.models.user import User
 from app.schemas.auth import ChangePasswordRequest, LoginRequest
@@ -24,6 +24,17 @@ def _set_session_cookie(response: Response, user: User) -> None:
         key=settings.session_cookie_name,
         value=token,
         httponly=True,
+        secure=settings.cookie_secure,
+        samesite="lax",
+        max_age=settings.access_token_expire_minutes * 60,
+        path="/",
+    )
+    # Deliberately *not* HttpOnly: the frontend reads this cookie and
+    # echoes it back as a header on state-changing requests (Section 15).
+    response.set_cookie(
+        key=settings.csrf_cookie_name,
+        value=generate_csrf_token(),
+        httponly=False,
         secure=settings.cookie_secure,
         samesite="lax",
         max_age=settings.access_token_expire_minutes * 60,
@@ -50,6 +61,7 @@ def login(
 @router.post("/logout")
 def logout(response: Response):
     response.delete_cookie(key=settings.session_cookie_name, path="/")
+    response.delete_cookie(key=settings.csrf_cookie_name, path="/")
     return {"detail": "logged out"}
 
 

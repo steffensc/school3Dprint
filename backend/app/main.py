@@ -22,6 +22,7 @@ from app.api.routes import (
     user_uploads,
 )
 from app.core.config import get_settings
+from app.core.csrf import CSRFMiddleware
 from app.db.session import SessionLocal
 from app.services.user_service import bootstrap_initial_admin
 from app.workers.retention_worker import start_retention_scheduler, stop_retention_scheduler
@@ -64,6 +65,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+app.add_middleware(CSRFMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],

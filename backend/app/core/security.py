@@ -7,6 +7,7 @@ it can't be read or exfiltrated via JavaScript/localStorage.
 
 from __future__ import annotations
 
+import secrets
 import uuid
 from datetime import UTC, datetime, timedelta
 from typing import Any
@@ -36,6 +37,15 @@ def create_access_token(subject: uuid.UUID, expires_minutes: int | None = None) 
     expire_at = datetime.now(UTC) + expire_delta
     payload: dict[str, Any] = {"sub": str(subject), "exp": expire_at}
     return jwt.encode(payload, settings.secret_key, algorithm=JWT_ALGORITHM)
+
+
+def generate_csrf_token() -> str:
+    """A fresh double-submit-cookie CSRF token, issued alongside the
+    session cookie on login (Section 15 "CSRF-Schutz bei Cookie-basierter
+    Auth"). No server-side storage needed: `CSRFMiddleware` just checks
+    that the value in this (readable) cookie matches an `X-CSRF-Token`
+    header the frontend echoes back on state-changing requests."""
+    return secrets.token_urlsafe(32)
 
 
 def decode_access_token(token: str) -> uuid.UUID | None:

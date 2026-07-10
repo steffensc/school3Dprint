@@ -30,6 +30,12 @@ class Settings(BaseSettings):
     session_cookie_name: str = "schoolprint_session"
     cookie_secure: bool = False
 
+    # CSRF (Section 15) — double-submit-cookie scheme: `csrf_cookie_name`
+    # is deliberately *not* HttpOnly so the frontend can read it and echo
+    # it back as `csrf_header_name` on state-changing requests.
+    csrf_cookie_name: str = "schoolprint_csrf"
+    csrf_header_name: str = "X-CSRF-Token"
+
     # Storage (local filesystem, never DB blobs)
     storage_root: Path = Path("/var/lib/schoolprint")
     uploads_dirname: str = "uploads"
