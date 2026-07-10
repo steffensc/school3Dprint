@@ -1,5 +1,5 @@
 import { api } from "@/lib/api";
-import type { PrintJob } from "@/lib/print-job";
+import type { PrintJob, PrintJobLiveStatus } from "@/lib/print-job";
 
 export async function listMyJobs(): Promise<PrintJob[]> {
   const { data } = await api.get<PrintJob[]>("/user/jobs");
@@ -8,6 +8,11 @@ export async function listMyJobs(): Promise<PrintJob[]> {
 
 export async function getMyJob(jobId: string): Promise<PrintJob> {
   const { data } = await api.get<PrintJob>(`/user/jobs/${jobId}`);
+  return data;
+}
+
+export async function getMyJobLiveStatus(jobId: string): Promise<PrintJobLiveStatus> {
+  const { data } = await api.get<PrintJobLiveStatus>(`/user/jobs/${jobId}/live-status`);
   return data;
 }
 

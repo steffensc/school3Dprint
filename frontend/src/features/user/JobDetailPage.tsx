@@ -2,9 +2,10 @@ import type { ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 
+import { PrintJobLiveProgress } from "@/components/PrintJobLiveProgress";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getMyJob } from "@/features/user/api";
+import { getMyJob, getMyJobLiveStatus } from "@/features/user/api";
 
 function Field({ label, value }: { label: string; value: ReactNode }) {
   return (
@@ -37,6 +38,15 @@ export function JobDetailPage() {
           </div>
         </CardHeader>
         <CardContent className="grid grid-cols-2 gap-4">
+          {(job.status === "PRINTING" || job.status === "PAUSED") && (
+            <div className="col-span-2">
+              <PrintJobLiveProgress
+                jobId={job.id}
+                queryKeyPrefix="user"
+                fetchLiveStatus={getMyJobLiveStatus}
+              />
+            </div>
+          )}
           <Field label="File" value={job.uploaded_file.original_filename} />
           <Field label="Queue position" value={job.queue_position ?? "—"} />
           <Field label="Submitted" value={new Date(job.created_at).toLocaleString()} />

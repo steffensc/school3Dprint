@@ -29,7 +29,11 @@ def get_queue(db: Session) -> list[PrintJob]:
     return list(
         db.execute(
             select(PrintJob)
-            .options(joinedload(PrintJob.uploaded_file), joinedload(PrintJob.owner))
+            .options(
+                joinedload(PrintJob.uploaded_file),
+                joinedload(PrintJob.owner),
+                joinedload(PrintJob.printer),
+            )
             .where(PrintJob.queue_position.isnot(None))
             .order_by(PrintJob.queue_position.asc())
         )
@@ -80,12 +84,12 @@ def remove_from_queue(db: Session, job: PrintJob, *, actor_id: uuid.UUID) -> Pri
         entity_id=job.id,
     )
     db.commit()
-    _renumber_queue(db)
+    renumber_queue(db)
     db.refresh(job)
     return job
 
 
-def _renumber_queue(db: Session) -> None:
+def renumber_queue(db: Session) -> None:
     """Closes gaps left by removals so positions stay a dense 1..n sequence."""
     queued_jobs = get_queue(db)
     for index, job in enumerate(queued_jobs, start=1):

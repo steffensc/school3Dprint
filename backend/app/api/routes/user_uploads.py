@@ -8,8 +8,8 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_current_user
 from app.db.session import get_db
 from app.models.user import User
-from app.schemas.print_job import PrintJobOut
-from app.services import job_service
+from app.schemas.print_job import PrintJobLiveStatusOut, PrintJobOut
+from app.services import job_service, print_service
 from app.services.upload_service import UploadValidationError, create_upload_and_job
 
 router = APIRouter(prefix="/api/user", tags=["user"])
@@ -54,3 +54,15 @@ def get_my_job(
     if job is None or job.owner_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found")
     return job
+
+
+@router.get("/jobs/{job_id}/live-status", response_model=PrintJobLiveStatusOut)
+def get_my_job_live_status(
+    job_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    job = job_service.get_job(db, job_id)
+    if job is None or job.owner_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found")
+    return print_service.get_live_progress(job)

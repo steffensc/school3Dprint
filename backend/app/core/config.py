@@ -55,6 +55,10 @@ class Settings(BaseSettings):
     update_repo: str = "example-org/schoolprint"
     update_channel: str = "stable"
 
+    # DummyDriver (Section 9.7) — simulated print duration for the MVP
+    # end-to-end flow; tests shrink this drastically to avoid sleeping.
+    dummy_driver_print_duration_seconds: float = 20.0
+
     @property
     def uploads_dir(self) -> Path:
         return self.storage_root / self.uploads_dirname

@@ -1,10 +1,43 @@
+import * as React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowDownIcon, ArrowUpIcon, ListPlusIcon, ScissorsIcon, XIcon } from "lucide-react";
+import {
+  ArrowDownIcon,
+  ArrowUpIcon,
+  ListPlusIcon,
+  PauseIcon,
+  PlayIcon,
+  PrinterIcon,
+  ScissorsIcon,
+  SquareIcon,
+  XIcon,
+} from "lucide-react";
 import { toast } from "sonner";
 
+import { PrintJobLiveProgress } from "@/components/PrintJobLiveProgress";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { listAllJobs } from "@/features/admin/jobsApi";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  cancelPrint,
+  getJobLiveStatus,
+  listAllJobs,
+  pausePrint,
+  resumePrint,
+  startPrint,
+} from "@/features/admin/jobsApi";
 import {
   enqueueJob,
   getQueue,
@@ -13,6 +46,7 @@ import {
   removeFromQueue,
   sliceJob,
 } from "@/features/admin/queueApi";
+import { listPrinters } from "@/features/admin/printersApi";
 import { StatusBadge } from "@/components/StatusBadge";
 import type { PrintJob } from "@/lib/print-job";
 
@@ -23,14 +57,43 @@ export function AdminQueuePage() {
     queryFn: getQueue,
   });
   const { data: allJobs } = useQuery({ queryKey: ["admin", "jobs"], queryFn: listAllJobs });
+  const { data: printers } = useQuery({ queryKey: ["admin", "printers"], queryFn: listPrinters });
+  const [startTarget, setStartTarget] = React.useState<PrintJob | null>(null);
 
   const approvedNotQueued =
     allJobs?.filter((j) => j.status === "APPROVED" || j.status === "SLICED") ?? [];
+  const printingJobs = allJobs?.filter((j) => j.status === "PRINTING" || j.status === "PAUSED") ?? [];
+  const activePrinters = printers?.filter((p) => p.is_active) ?? [];
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["admin", "queue"] });
     queryClient.invalidateQueries({ queryKey: ["admin", "jobs"] });
   };
+
+  const pauseMutation = useMutation({
+    mutationFn: (job: PrintJob) => pausePrint(job.id),
+    onSuccess: () => {
+      toast.success("Print paused");
+      invalidate();
+    },
+    onError: (err) => toast.error((err as Error).message),
+  });
+  const resumeMutation = useMutation({
+    mutationFn: (job: PrintJob) => resumePrint(job.id),
+    onSuccess: () => {
+      toast.success("Print resumed");
+      invalidate();
+    },
+    onError: (err) => toast.error((err as Error).message),
+  });
+  const cancelMutation = useMutation({
+    mutationFn: (job: PrintJob) => cancelPrint(job.id),
+    onSuccess: () => {
+      toast.success("Print cancelled");
+      invalidate();
+    },
+    onError: (err) => toast.error((err as Error).message),
+  });
 
   const moveUpMutation = useMutation({
     mutationFn: (job: PrintJob) => moveJobUp(job.id),
@@ -76,6 +139,66 @@ export function AdminQueuePage() {
 
       <Card>
         <CardHeader>
+          <CardTitle>Currently printing</CardTitle>
+          <CardDescription>Jobs actively running on a printer right now.</CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-3">
+          {printingJobs.length === 0 && (
+            <p className="text-sm text-muted-foreground">No printer is currently busy.</p>
+          )}
+          {printingJobs.map((job) => (
+            <div key={job.id} className="flex flex-col gap-2 rounded-md border px-3 py-2">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium">{job.title}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {job.owner?.display_name} · {job.printer?.name ?? "Unknown printer"}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <StatusBadge status={job.status} />
+                  {job.status === "PRINTING" && (
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      disabled={pauseMutation.isPending}
+                      onClick={() => pauseMutation.mutate(job)}
+                    >
+                      <PauseIcon />
+                    </Button>
+                  )}
+                  {job.status === "PAUSED" && (
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      disabled={resumeMutation.isPending}
+                      onClick={() => resumeMutation.mutate(job)}
+                    >
+                      <PlayIcon />
+                    </Button>
+                  )}
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    disabled={cancelMutation.isPending}
+                    onClick={() => cancelMutation.mutate(job)}
+                  >
+                    <SquareIcon />
+                  </Button>
+                </div>
+              </div>
+              <PrintJobLiveProgress
+                jobId={job.id}
+                queryKeyPrefix="admin"
+                fetchLiveStatus={getJobLiveStatus}
+              />
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
           <CardTitle>Queue</CardTitle>
           <CardDescription>Jobs in print order.</CardDescription>
         </CardHeader>
@@ -101,6 +224,14 @@ export function AdminQueuePage() {
                 </div>
               </div>
               <div className="flex gap-1">
+                <Button
+                  size="sm"
+                  disabled={activePrinters.length === 0}
+                  onClick={() => setStartTarget(job)}
+                  title={activePrinters.length === 0 ? "No active printers configured" : undefined}
+                >
+                  <PrinterIcon /> Start print
+                </Button>
                 <Button
                   variant="outline"
                   size="icon"
@@ -168,6 +299,75 @@ export function AdminQueuePage() {
           ))}
         </CardContent>
       </Card>
+
+      <Dialog open={startTarget !== null} onOpenChange={(open) => !open && setStartTarget(null)}>
+        {startTarget && (
+          <StartPrintDialog
+            job={startTarget}
+            printers={activePrinters}
+            onDone={() => {
+              setStartTarget(null);
+              invalidate();
+            }}
+          />
+        )}
+      </Dialog>
     </div>
+  );
+}
+
+function StartPrintDialog({
+  job,
+  printers,
+  onDone,
+}: {
+  job: PrintJob;
+  printers: { id: string; name: string }[];
+  onDone: () => void;
+}) {
+  const [printerId, setPrinterId] = React.useState(printers[0]?.id ?? "");
+
+  const mutation = useMutation({
+    mutationFn: () => startPrint(job.id, printerId),
+    onSuccess: () => {
+      toast.success(`Print started on ${printers.find((p) => p.id === printerId)?.name}`);
+      onDone();
+    },
+    onError: (err) => toast.error((err as Error).message),
+  });
+
+  return (
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>Start print: "{job.title}"</DialogTitle>
+      </DialogHeader>
+      <form
+        className="flex flex-col gap-4"
+        onSubmit={(e) => {
+          e.preventDefault();
+          mutation.mutate();
+        }}
+      >
+        <div className="flex flex-col gap-1.5">
+          <Select value={printerId} onValueChange={setPrinterId}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select a printer" />
+            </SelectTrigger>
+            <SelectContent>
+              {printers.map((printer) => (
+                <SelectItem key={printer.id} value={printer.id}>
+                  {printer.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <DialogFooter>
+          <Button type="submit" disabled={mutation.isPending || !printerId}>
+            {mutation.isPending ? "Starting..." : "Start print"}
+          </Button>
+        </DialogFooter>
+      </form>
+    </DialogContent>
   );
 }

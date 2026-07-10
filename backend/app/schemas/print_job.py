@@ -31,6 +31,17 @@ class JobActionRequest(BaseModel):
     teacher_note: str | None = None
 
 
+class StartPrintRequest(BaseModel):
+    printer_id: uuid.UUID
+
+
+class PrintJobPrinterOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    name: str
+
+
 class PrintJobOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -52,3 +63,13 @@ class PrintJobOut(BaseModel):
     expires_at: datetime | None = None
     uploaded_file: UploadedFileOut
     owner: PrintJobOwnerOut | None = None
+    printer: PrintJobPrinterOut | None = None
+
+
+class PrintJobLiveStatusOut(BaseModel):
+    status: str
+    progress: float = 0.0
+    nozzle_actual: float | None = None
+    nozzle_target: float | None = None
+    bed_actual: float | None = None
+    bed_target: float | None = None

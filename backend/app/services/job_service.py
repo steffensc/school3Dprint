@@ -16,18 +16,32 @@ from app.services.job_status import assert_transition_allowed
 
 
 def get_job(db: Session, job_id: uuid.UUID) -> PrintJob | None:
-    return db.execute(
+    job = db.execute(
         select(PrintJob)
-        .options(joinedload(PrintJob.uploaded_file), joinedload(PrintJob.owner))
+        .options(
+            joinedload(PrintJob.uploaded_file),
+            joinedload(PrintJob.owner),
+            joinedload(PrintJob.printer),
+        )
         .where(PrintJob.id == job_id)
     ).scalar_one_or_none()
+    needs_sync = job is not None and job.status in (Status.PRINTING, Status.PAUSED)
+    if needs_sync and job.printer is not None:
+        from app.services.print_service import sync_job_with_driver
+
+        job = sync_job_with_driver(db, job)
+    return job
 
 
 def list_jobs_for_owner(db: Session, owner_id: uuid.UUID) -> list[PrintJob]:
     return list(
         db.execute(
             select(PrintJob)
-            .options(joinedload(PrintJob.uploaded_file), joinedload(PrintJob.owner))
+            .options(
+                joinedload(PrintJob.uploaded_file),
+                joinedload(PrintJob.owner),
+                joinedload(PrintJob.printer),
+            )
             .where(PrintJob.owner_id == owner_id)
             .order_by(PrintJob.created_at.desc())
         )
@@ -40,7 +54,11 @@ def list_all_jobs(db: Session) -> list[PrintJob]:
     return list(
         db.execute(
             select(PrintJob)
-            .options(joinedload(PrintJob.uploaded_file), joinedload(PrintJob.owner))
+            .options(
+                joinedload(PrintJob.uploaded_file),
+                joinedload(PrintJob.owner),
+                joinedload(PrintJob.printer),
+            )
             .order_by(PrintJob.created_at.desc())
         )
         .unique()

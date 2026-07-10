@@ -75,6 +75,13 @@ def tmp_storage(monkeypatch: pytest.MonkeyPatch) -> Generator[Path, None, None]:
 
 
 @pytest.fixture()
+def fast_dummy_driver(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Shrinks the `DummyDriver` simulated print duration so E2E tests
+    don't have to sleep for the (20s) production default."""
+    monkeypatch.setattr(settings, "dummy_driver_print_duration_seconds", 0.05)
+
+
+@pytest.fixture()
 def fake_slicer(monkeypatch: pytest.MonkeyPatch) -> Path:
     """Points the slicer service at `tests/fixtures/fake_slicer.py` instead
     of a real OrcaSlicer binary, which isn't available in this sandbox."""
@@ -122,6 +129,18 @@ def normal_user(db_session: Session) -> User:
             class_name="5a",
         ),
     )
+
+
+@pytest.fixture(autouse=True)
+def _reset_dummy_driver_state() -> None:
+    """`DummyDriver` keeps simulated printer state in a module-level dict
+    (Section 9.7); clear it between tests so runs don't leak into each
+    other."""
+    from app.printer_drivers.dummy import reset_all_dummy_state
+
+    reset_all_dummy_state()
+    yield
+    reset_all_dummy_state()
 
 
 @pytest.fixture()

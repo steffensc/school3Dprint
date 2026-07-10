@@ -29,6 +29,20 @@ export interface PrintJobOwnerOut {
   class_name: string | null;
 }
 
+export interface PrintJobPrinterOut {
+  id: string;
+  name: string;
+}
+
+export interface PrintJobLiveStatus {
+  status: string;
+  progress: number;
+  nozzle_actual: number | null;
+  nozzle_target: number | null;
+  bed_actual: number | null;
+  bed_target: number | null;
+}
+
 export interface PrintJob {
   id: string;
   title: string;
@@ -48,6 +62,7 @@ export interface PrintJob {
   expires_at: string | null;
   uploaded_file: UploadedFileOut;
   owner?: PrintJobOwnerOut | null;
+  printer?: PrintJobPrinterOut | null;
 }
 
 export const statusLabels: Record<PrintJobStatus, string> = {

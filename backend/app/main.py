@@ -10,7 +10,14 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app import __version__
-from app.api.routes import admin_jobs, admin_queue, admin_users, auth, user_uploads
+from app.api.routes import (
+    admin_jobs,
+    admin_printers,
+    admin_queue,
+    admin_users,
+    auth,
+    user_uploads,
+)
 from app.core.config import get_settings
 from app.db.session import SessionLocal
 from app.services.user_service import bootstrap_initial_admin
@@ -62,6 +69,7 @@ app.include_router(admin_users.router)
 app.include_router(user_uploads.router)
 app.include_router(admin_jobs.router)
 app.include_router(admin_queue.router)
+app.include_router(admin_printers.router)
 
 
 @app.get("/api/health", tags=["health"])
