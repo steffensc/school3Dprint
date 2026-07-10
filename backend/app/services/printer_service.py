@@ -8,10 +8,26 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.crypto import encrypt_secret
-from app.models.enums import AuditAction
+from app.models.enums import AuditAction, PrinterDriverType
 from app.models.printer import Printer
 from app.schemas.printer import PrinterCreate, PrinterUpdate
 from app.services.audit_service import log_action
+
+
+class PrinterValidationError(Exception):
+    pass
+
+
+def _require_bambu_lan_fields(host: str | None, serial_number: str | None) -> None:
+    missing = [
+        field_name
+        for field_name, value in (("host", host), ("serial_number", serial_number))
+        if not value
+    ]
+    if missing:
+        raise PrinterValidationError(
+            f"BAMBU_LAN printers require: {', '.join(missing)}."
+        )
 
 
 def list_printers(db: Session) -> list[Printer]:
@@ -23,6 +39,9 @@ def get_printer(db: Session, printer_id: uuid.UUID) -> Printer | None:
 
 
 def create_printer(db: Session, data: PrinterCreate, *, actor_id: uuid.UUID) -> Printer:
+    if data.driver_type == PrinterDriverType.BAMBU_LAN:
+        _require_bambu_lan_fields(data.host, data.serial_number)
+
     printer = Printer(
         name=data.name,
         driver_type=data.driver_type,

@@ -33,8 +33,12 @@ def _select_artifact_path(job: PrintJob) -> Path:
     return Path(job.uploaded_file.storage_path)
 
 
-def _remote_name(job: PrintJob) -> str:
-    return f"{job.id}.gcode"
+def _remote_name(artifact_path: Path) -> str:
+    """Derives the filename to use on the printer's own storage from the
+    local artifact path, so real drivers (BambuLanDriver) see the same
+    `.gcode.3mf` extension OrcaSlicer produced rather than an arbitrary
+    one."""
+    return artifact_path.name
 
 
 def start_print(
@@ -48,7 +52,7 @@ def start_print(
     assert_transition_allowed(job.status, Status.PRINTING)
 
     artifact_path = _select_artifact_path(job)
-    remote_name = _remote_name(job)
+    remote_name = _remote_name(artifact_path)
     driver = get_driver(printer)
 
     try:

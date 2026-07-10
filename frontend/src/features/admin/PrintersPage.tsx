@@ -184,6 +184,7 @@ function CreatePrinterDialog({ onCreated }: { onCreated: () => void }) {
   const [driverType, setDriverType] = React.useState<PrinterDriverType>("DUMMY");
   const [host, setHost] = React.useState("");
   const [port, setPort] = React.useState("");
+  const [serialNumber, setSerialNumber] = React.useState("");
   const [location, setLocation] = React.useState("");
   const [accessCode, setAccessCode] = React.useState("");
 
@@ -194,6 +195,7 @@ function CreatePrinterDialog({ onCreated }: { onCreated: () => void }) {
         driver_type: driverType,
         host: host || null,
         port: port ? Number(port) : null,
+        serial_number: serialNumber || null,
         location: location || null,
         access_code: accessCode || null,
       };
@@ -246,6 +248,7 @@ function CreatePrinterDialog({ onCreated }: { onCreated: () => void }) {
                 value={host}
                 onChange={(e) => setHost(e.target.value)}
                 placeholder="192.168.1.42"
+                required
               />
             </div>
             <div className="flex flex-col gap-1.5">
@@ -256,6 +259,16 @@ function CreatePrinterDialog({ onCreated }: { onCreated: () => void }) {
                 value={port}
                 onChange={(e) => setPort(e.target.value)}
                 placeholder="8883"
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="printer-serial">Serial number</Label>
+              <Input
+                id="printer-serial"
+                value={serialNumber}
+                onChange={(e) => setSerialNumber(e.target.value)}
+                placeholder="01P00A000000001"
+                required
               />
             </div>
             <div className="flex flex-col gap-1.5">
