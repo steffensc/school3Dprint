@@ -1,4 +1,3 @@
-````markdown
 ## Plan: MVP für lokalen Schul-3D-Druckserver
 
 **TL;DR:**  
@@ -1619,18 +1618,3 @@ Der MVP ist fertig, wenn:
 16. Installation ist dokumentiert.
 
 ***
-
-# 22. Empfohlener Projektname
-
-Meine Favoriten:
-
-1. **SchoolPrint**
-2. **EduPrint Server**
-3. **ClassPrint3D**
-4. **LocalPrint3D**
-5. **PrintRoom**
-
-Ich würde **SchoolPrint** nehmen: kurz, verständlich, international verwendbar.
-
-```
-```
