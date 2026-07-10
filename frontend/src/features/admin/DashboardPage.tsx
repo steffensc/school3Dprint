@@ -2,15 +2,21 @@ import { useQuery } from "@tanstack/react-query";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { listUsers } from "@/features/admin/api";
+import { listAllJobs } from "@/features/admin/jobsApi";
 
 export function AdminDashboardPage() {
   const { data: users } = useQuery({ queryKey: ["admin", "users"], queryFn: listUsers });
+  const { data: jobs } = useQuery({ queryKey: ["admin", "jobs"], queryFn: listAllJobs });
+
+  const openApprovals = jobs?.filter((j) => j.status === "SUBMITTED").length;
+  const queueLength = jobs?.filter((j) => j.queue_position !== null).length;
+  const activePrints = jobs?.filter((j) => j.status === "PRINTING").length;
 
   const tiles = [
     { label: "Total users", value: users?.length ?? "—" },
-    { label: "Open approvals", value: "—" },
-    { label: "Queue length", value: "—" },
-    { label: "Active prints", value: "—" },
+    { label: "Open approvals", value: openApprovals ?? "—" },
+    { label: "Queue length", value: queueLength ?? "—" },
+    { label: "Active prints", value: activePrints ?? "—" },
     { label: "Printers online", value: "—" },
     { label: "Storage used", value: "—" },
   ];

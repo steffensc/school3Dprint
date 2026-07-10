@@ -27,6 +27,10 @@ class PrintJobOwnerOut(BaseModel):
     class_name: str | None = None
 
 
+class JobActionRequest(BaseModel):
+    teacher_note: str | None = None
+
+
 class PrintJobOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
