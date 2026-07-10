@@ -66,6 +66,14 @@ npm run dev
 The dev server runs at `http://localhost:5173` and proxies `/api/*`
 requests to the backend at `http://localhost:8000`.
 
+Run component tests and lint/build with:
+
+```bash
+npm run test
+npm run lint
+npm run build
+```
+
 ## Deployment (Raspberry Pi / Podman)
 
 ```bash

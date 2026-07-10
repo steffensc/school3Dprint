@@ -28,7 +28,11 @@ sudo mkdir -p "$DATA_ROOT"/{uploads,sliced,previews,postgres,backups}
 sudo chown -R "$(id -u):$(id -g)" "$DATA_ROOT"
 
 sudo mkdir -p "$INSTALL_DIR"
-sudo cp -r "$REPO_DIR/deploy" "$INSTALL_DIR/deploy"
+# Copy the whole repo, not just deploy/: compose.yaml builds `backend`
+# and `frontend` from ../backend and ../frontend (relative to itself),
+# and the `updater` image build needs scripts/updater-trigger.sh
+# alongside deploy/ as its build context.
+sudo cp -r "$REPO_DIR/deploy" "$REPO_DIR/backend" "$REPO_DIR/frontend" "$REPO_DIR/scripts" "$INSTALL_DIR/"
 sudo chown -R "$(id -u):$(id -g)" "$INSTALL_DIR"
 
 if [ ! -f "$INSTALL_DIR/deploy/.env" ]; then
