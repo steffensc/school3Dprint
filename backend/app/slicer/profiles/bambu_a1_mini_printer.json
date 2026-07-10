@@ -1,0 +1,9 @@
+{
+  "type": "machine",
+  "name": "Bambu Lab A1 Mini (placeholder)",
+  "from": "System",
+  "instantiation": "true",
+  "nozzle_diameter": "0.4",
+  "printer_model": "Bambu Lab A1 mini",
+  "_comment": "Placeholder profile. Replace with a real exported Bambu Studio/OrcaSlicer machine profile before printing on hardware."
+}

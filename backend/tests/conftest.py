@@ -75,6 +75,16 @@ def tmp_storage(monkeypatch: pytest.MonkeyPatch) -> Generator[Path, None, None]:
 
 
 @pytest.fixture()
+def fake_slicer(monkeypatch: pytest.MonkeyPatch) -> Path:
+    """Points the slicer service at `tests/fixtures/fake_slicer.py` instead
+    of a real OrcaSlicer binary, which isn't available in this sandbox."""
+    fake_slicer_path = Path(__file__).parent / "fixtures" / "fake_slicer.py"
+    monkeypatch.setattr(settings, "slicer_binary_path", str(fake_slicer_path))
+    monkeypatch.setattr(settings, "slicer_timeout_seconds", 2)
+    return fake_slicer_path
+
+
+@pytest.fixture()
 def client(db_session: Session) -> Generator[TestClient, None, None]:
     """A `TestClient` bound to the test DB session, with app startup/shutdown
     lifespan events skipped (no `with` block) so tests fully control state."""

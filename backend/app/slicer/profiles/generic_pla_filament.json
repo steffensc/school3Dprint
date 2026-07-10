@@ -1,0 +1,8 @@
+{
+  "type": "filament",
+  "name": "Generic PLA (placeholder)",
+  "from": "System",
+  "instantiation": "true",
+  "filament_type": "PLA",
+  "_comment": "Placeholder profile. Replace with a real exported Bambu Studio/OrcaSlicer filament profile before printing on hardware."
+}

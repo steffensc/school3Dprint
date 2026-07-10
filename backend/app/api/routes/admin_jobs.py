@@ -12,6 +12,7 @@ from app.schemas.print_job import JobActionRequest, PrintJobOut
 from app.services import job_service, queue_service
 from app.services.job_status import InvalidStatusTransitionError
 from app.services.queue_service import QueueError
+from app.slicer.service import SlicingFailedError, slice_print_job
 
 router = APIRouter(prefix="/api/admin/jobs", tags=["admin-jobs"])
 
@@ -76,6 +77,21 @@ def unapprove_job(
         return job_service.unapprove_job(db, job, actor_id=admin.id)
     except InvalidStatusTransitionError as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
+
+
+@router.post("/{job_id}/slice", response_model=PrintJobOut)
+def slice_job(
+    job_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin),
+):
+    job = _get_job_or_404(db, job_id)
+    try:
+        return slice_print_job(db, job, actor_id=admin.id)
+    except InvalidStatusTransitionError as exc:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
+    except SlicingFailedError as exc:
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(exc)) from exc
 
 
 @router.post("/{job_id}/enqueue", response_model=PrintJobOut)

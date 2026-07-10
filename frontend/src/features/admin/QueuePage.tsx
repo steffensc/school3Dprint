@@ -1,11 +1,19 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowDownIcon, ArrowUpIcon, ListPlusIcon, XIcon } from "lucide-react";
+import { ArrowDownIcon, ArrowUpIcon, ListPlusIcon, ScissorsIcon, XIcon } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { listAllJobs } from "@/features/admin/jobsApi";
-import { enqueueJob, getQueue, moveJobDown, moveJobUp, removeFromQueue } from "@/features/admin/queueApi";
+import {
+  enqueueJob,
+  getQueue,
+  moveJobDown,
+  moveJobUp,
+  removeFromQueue,
+  sliceJob,
+} from "@/features/admin/queueApi";
+import { StatusBadge } from "@/components/StatusBadge";
 import type { PrintJob } from "@/lib/print-job";
 
 export function AdminQueuePage() {
@@ -16,7 +24,8 @@ export function AdminQueuePage() {
   });
   const { data: allJobs } = useQuery({ queryKey: ["admin", "jobs"], queryFn: listAllJobs });
 
-  const approvedNotQueued = allJobs?.filter((j) => j.status === "APPROVED") ?? [];
+  const approvedNotQueued =
+    allJobs?.filter((j) => j.status === "APPROVED" || j.status === "SLICED") ?? [];
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["admin", "queue"] });
@@ -45,6 +54,14 @@ export function AdminQueuePage() {
     mutationFn: (job: PrintJob) => enqueueJob(job.id),
     onSuccess: () => {
       toast.success("Added to queue");
+      invalidate();
+    },
+    onError: (err) => toast.error((err as Error).message),
+  });
+  const sliceMutation = useMutation({
+    mutationFn: (job: PrintJob) => sliceJob(job.id),
+    onSuccess: () => {
+      toast.success("Slicing complete");
       invalidate();
     },
     onError: (err) => toast.error((err as Error).message),
@@ -123,15 +140,30 @@ export function AdminQueuePage() {
               key={job.id}
               className="flex items-center justify-between rounded-md border px-3 py-2"
             >
-              <div>
-                <p className="text-sm font-medium">{job.title}</p>
-                <p className="text-xs text-muted-foreground">
-                  {job.owner?.display_name} · {job.uploaded_file.original_filename}
-                </p>
+              <div className="flex items-center gap-2">
+                <div>
+                  <p className="text-sm font-medium">{job.title}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {job.owner?.display_name} · {job.uploaded_file.original_filename}
+                  </p>
+                </div>
+                <StatusBadge status={job.status} />
               </div>
-              <Button size="sm" onClick={() => enqueueMutation.mutate(job)}>
-                <ListPlusIcon /> Add to queue
-              </Button>
+              <div className="flex gap-2">
+                {job.status === "APPROVED" && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={sliceMutation.isPending}
+                    onClick={() => sliceMutation.mutate(job)}
+                  >
+                    <ScissorsIcon /> Slice
+                  </Button>
+                )}
+                <Button size="sm" onClick={() => enqueueMutation.mutate(job)}>
+                  <ListPlusIcon /> Add to queue
+                </Button>
+              </div>
             </div>
           ))}
         </CardContent>

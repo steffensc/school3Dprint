@@ -23,6 +23,11 @@ export async function moveJobDown(jobId: string): Promise<PrintJob[]> {
   return data;
 }
 
+export async function sliceJob(jobId: string): Promise<PrintJob> {
+  const { data } = await api.post<PrintJob>(`/admin/jobs/${jobId}/slice`);
+  return data;
+}
+
 export async function enqueueJob(jobId: string): Promise<PrintJob> {
   const { data } = await api.post<PrintJob>(`/admin/jobs/${jobId}/enqueue`);
   return data;
