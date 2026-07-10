@@ -15,6 +15,8 @@ from app.api.routes import (
     admin_printers,
     admin_queue,
     admin_settings,
+    admin_system,
+    admin_updates,
     admin_users,
     auth,
     user_uploads,
@@ -77,6 +79,8 @@ app.include_router(admin_jobs.router)
 app.include_router(admin_queue.router)
 app.include_router(admin_printers.router)
 app.include_router(admin_settings.router)
+app.include_router(admin_system.router)
+app.include_router(admin_updates.router)
 
 
 @app.get("/api/health", tags=["health"])

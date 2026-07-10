@@ -45,6 +45,13 @@ class SlicedArtifactType(str, enum.Enum):
     METADATA_JSON = "METADATA_JSON"
 
 
+class UpdateRunStatus(str, enum.Enum):
+    PENDING = "PENDING"
+    RUNNING = "RUNNING"
+    SUCCEEDED = "SUCCEEDED"
+    FAILED = "FAILED"
+
+
 class AuditAction(str, enum.Enum):
     USER_CREATED = "USER_CREATED"
     USER_UPDATED = "USER_UPDATED"
@@ -73,5 +80,6 @@ class AuditAction(str, enum.Enum):
     RETENTION_RUN = "RETENTION_RUN"
     UPDATE_CHECKED = "UPDATE_CHECKED"
     UPDATE_STARTED = "UPDATE_STARTED"
+    UPDATE_SUCCEEDED = "UPDATE_SUCCEEDED"
     UPDATE_FAILED = "UPDATE_FAILED"
     SETTINGS_UPDATED = "SETTINGS_UPDATED"

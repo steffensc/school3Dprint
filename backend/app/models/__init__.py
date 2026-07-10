@@ -10,6 +10,7 @@ from app.models.print_job import PrintJob
 from app.models.printer import Printer
 from app.models.sliced_artifact import SlicedArtifact
 from app.models.system_setting import SystemSetting
+from app.models.update_run import UpdateRun
 from app.models.uploaded_file import UploadedFile
 from app.models.user import User
 
@@ -19,6 +20,7 @@ __all__ = [
     "Printer",
     "SlicedArtifact",
     "SystemSetting",
+    "UpdateRun",
     "UploadedFile",
     "User",
 ]

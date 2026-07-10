@@ -51,9 +51,16 @@ class Settings(BaseSettings):
     retention_days_rejected: int = 30
     retention_days_failed: int = 30
 
-    # Updates
+    # Updates (Section 9.10) — GitHub Releases check + a delegated, minimally
+    # privileged "Updater" process. The backend never runs `podman pull` /
+    # `compose up -d` itself; it makes a local HTTP call to the separate
+    # `updater` container (see deploy/updater/), which is the only
+    # component with Podman access (Section 20).
     update_repo: str = "example-org/schoolprint"
     update_channel: str = "stable"
+    github_api_base_url: str = "https://api.github.com"
+    updater_service_url: str = "http://updater:8090"
+    updater_timeout_seconds: int = 600
 
     # DummyDriver (Section 9.7) — simulated print duration for the MVP
     # end-to-end flow; tests shrink this drastically to avoid sleeping.

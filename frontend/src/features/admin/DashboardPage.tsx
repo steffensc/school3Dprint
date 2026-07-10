@@ -4,11 +4,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { listUsers } from "@/features/admin/api";
 import { listAllJobs } from "@/features/admin/jobsApi";
 import { listPrinters } from "@/features/admin/printersApi";
+import { getStorageOverview } from "@/features/admin/retentionApi";
+import { formatBytes } from "@/lib/retention";
 
 export function AdminDashboardPage() {
   const { data: users } = useQuery({ queryKey: ["admin", "users"], queryFn: listUsers });
   const { data: jobs } = useQuery({ queryKey: ["admin", "jobs"], queryFn: listAllJobs });
   const { data: printers } = useQuery({ queryKey: ["admin", "printers"], queryFn: listPrinters });
+  const { data: storage } = useQuery({
+    queryKey: ["admin", "storage", "overview"],
+    queryFn: getStorageOverview,
+  });
 
   const openApprovals = jobs?.filter((j) => j.status === "SUBMITTED").length;
   const queueLength = jobs?.filter((j) => j.queue_position !== null).length;
@@ -21,7 +27,12 @@ export function AdminDashboardPage() {
     { label: "Queue length", value: queueLength ?? "—" },
     { label: "Active prints", value: activePrints ?? "—" },
     { label: "Printers configured", value: activePrinters ?? "—" },
-    { label: "Storage used", value: "—" },
+    {
+      label: "Storage used",
+      value: storage
+        ? `${formatBytes(storage.uploads_bytes + storage.sliced_bytes)}`
+        : "—",
+    },
   ];
 
   return (
