@@ -59,6 +59,11 @@ class Settings(BaseSettings):
     # end-to-end flow; tests shrink this drastically to avoid sleeping.
     dummy_driver_print_duration_seconds: float = 20.0
 
+    # Retention worker (Section 9.9) — runs once a day via APScheduler;
+    # disabled in tests so they control retention runs explicitly.
+    retention_scheduler_enabled: bool = True
+    retention_scheduler_hour_utc: int = 3
+
     @property
     def uploads_dir(self) -> Path:
         return self.storage_root / self.uploads_dirname

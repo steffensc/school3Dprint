@@ -19,7 +19,11 @@ class InvalidStatusTransitionError(Exception):
 
 ALLOWED_TRANSITIONS: dict[S, set[S]] = {
     S.SUBMITTED: {S.APPROVED, S.REJECTED},
-    S.REJECTED: set(),
+    # A rejected job's uploaded file is still subject to retention
+    # (Section 9.9: "REJECTED älter als retention_days_rejected -> Datei
+    # löschen"), so REJECTED can move straight to DELETED once its file
+    # has been cleaned up.
+    S.REJECTED: {S.DELETED},
     S.APPROVED: {S.SUBMITTED, S.SLICING, S.QUEUED},
     S.SLICING: {S.SLICED, S.FAILED},
     S.SLICED: {S.QUEUED},

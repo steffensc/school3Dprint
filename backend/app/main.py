@@ -14,6 +14,7 @@ from app.api.routes import (
     admin_jobs,
     admin_printers,
     admin_queue,
+    admin_settings,
     admin_users,
     auth,
     user_uploads,
@@ -21,6 +22,7 @@ from app.api.routes import (
 from app.core.config import get_settings
 from app.db.session import SessionLocal
 from app.services.user_service import bootstrap_initial_admin
+from app.workers.retention_worker import start_retention_scheduler, stop_retention_scheduler
 
 logger = logging.getLogger("schoolprint")
 settings = get_settings()
@@ -46,7 +48,11 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     finally:
         db.close()
 
+    start_retention_scheduler()
+
     yield
+
+    stop_retention_scheduler()
 
 
 app = FastAPI(
@@ -70,6 +76,7 @@ app.include_router(user_uploads.router)
 app.include_router(admin_jobs.router)
 app.include_router(admin_queue.router)
 app.include_router(admin_printers.router)
+app.include_router(admin_settings.router)
 
 
 @app.get("/api/health", tags=["health"])

@@ -22,6 +22,9 @@ os.environ.setdefault(
 )
 os.environ.setdefault("SCHOOLPRINT_SECRET_KEY", "test-secret-key")
 os.environ.setdefault("SCHOOLPRINT_COOKIE_SECURE", "false")
+# Tests trigger retention explicitly via the API; the daily APScheduler
+# job would otherwise spin up a background thread per test run.
+os.environ.setdefault("SCHOOLPRINT_RETENTION_SCHEDULER_ENABLED", "false")
 
 import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
