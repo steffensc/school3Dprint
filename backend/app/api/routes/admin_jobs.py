@@ -9,8 +9,9 @@ from app.api.deps import require_admin
 from app.db.session import get_db
 from app.models.user import User
 from app.schemas.print_job import JobActionRequest, PrintJobOut
-from app.services import job_service
+from app.services import job_service, queue_service
 from app.services.job_status import InvalidStatusTransitionError
+from app.services.queue_service import QueueError
 
 router = APIRouter(prefix="/api/admin/jobs", tags=["admin-jobs"])
 
@@ -74,4 +75,30 @@ def unapprove_job(
     try:
         return job_service.unapprove_job(db, job, actor_id=admin.id)
     except InvalidStatusTransitionError as exc:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
+
+
+@router.post("/{job_id}/enqueue", response_model=PrintJobOut)
+def enqueue_job(
+    job_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin),
+):
+    job = _get_job_or_404(db, job_id)
+    try:
+        return queue_service.enqueue_job(db, job, actor_id=admin.id)
+    except (InvalidStatusTransitionError, QueueError) as exc:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
+
+
+@router.post("/{job_id}/remove-from-queue", response_model=PrintJobOut)
+def remove_job_from_queue(
+    job_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin),
+):
+    job = _get_job_or_404(db, job_id)
+    try:
+        return queue_service.remove_from_queue(db, job, actor_id=admin.id)
+    except (InvalidStatusTransitionError, QueueError) as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
