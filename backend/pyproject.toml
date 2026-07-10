@@ -1,0 +1,52 @@
+[project]
+name = "schoolprint-backend"
+version = "0.1.0"
+description = "Local school 3D-print management server backend (FastAPI)"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115,<1.0",
+    "uvicorn[standard]>=0.30",
+    "sqlalchemy>=2.0,<3.0",
+    "alembic>=1.13,<2.0",
+    "asyncpg>=0.29",
+    "psycopg[binary]>=3.1",
+    "pydantic>=2.7,<3.0",
+    "pydantic-settings>=2.3",
+    "passlib[argon2]>=1.7",
+    "python-jose[cryptography]>=3.3",
+    "python-multipart>=0.0.9",
+    "cryptography>=42.0",
+    "paho-mqtt>=1.6,<2.0",
+    "httpx>=0.27",
+    "APScheduler>=3.10",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "ruff>=0.5",
+    "mypy>=1.10",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = [
+    "UP042", # (str, Enum) mixins are intentional for JSON/DB serialization
+    "B008",  # FastAPI's `Depends(...)` in argument defaults is idiomatic
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
