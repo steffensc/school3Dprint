@@ -1,0 +1,16 @@
+[Unit]
+Description=SchoolPrint (Podman Compose stack)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/opt/schoolprint/deploy
+ExecStartPre=-/usr/bin/podman-compose -f compose.yaml --env-file .env pull
+ExecStart=/usr/bin/podman-compose -f compose.yaml --env-file .env up -d
+ExecStop=/usr/bin/podman-compose -f compose.yaml --env-file .env down
+TimeoutStartSec=300
+
+[Install]
+WantedBy=multi-user.target

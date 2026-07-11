@@ -1,0 +1,119 @@
+name: schoolprint
+
+services:
+  postgres:
+    image: docker.io/library/postgres:16-alpine
+    container_name: schoolprint-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-schoolprint}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-schoolprint}
+    volumes:
+      - schoolprint-postgres:/var/lib/postgresql/data
+    networks:
+      - schoolprint-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-schoolprint}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ../backend
+    container_name: schoolprint-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      updater:
+        condition: service_started
+    environment:
+      SCHOOLPRINT_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-schoolprint}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@postgres:5432/${POSTGRES_DB:-schoolprint}
+      SCHOOLPRINT_SECRET_KEY: ${SCHOOLPRINT_SECRET_KEY:?set SCHOOLPRINT_SECRET_KEY in .env}
+      SCHOOLPRINT_ENVIRONMENT: production
+      SCHOOLPRINT_COOKIE_SECURE: ${SCHOOLPRINT_COOKIE_SECURE:-true}
+      SCHOOLPRINT_STORAGE_ROOT: /var/lib/schoolprint
+      # The backend only ever talks HTTP to the `updater` service below;
+      # it never gets a podman socket or host root access itself
+      # (Section 9.10 / 20 Architekturentscheidungen).
+      SCHOOLPRINT_UPDATER_SERVICE_URL: http://updater:8090
+      SCHOOLPRINT_UPDATE_REPO: ${SCHOOLPRINT_UPDATE_REPO:-example-org/schoolprint}
+    volumes:
+      - schoolprint-uploads:/var/lib/schoolprint/uploads
+      - schoolprint-sliced:/var/lib/schoolprint/sliced
+      - schoolprint-previews:/var/lib/schoolprint/previews
+      - schoolprint-backups:/var/lib/schoolprint/backups
+    networks:
+      - schoolprint-net
+    ports:
+      - "127.0.0.1:8000:8000"
+
+  frontend:
+    build:
+      context: ../frontend
+    container_name: schoolprint-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    networks:
+      - schoolprint-net
+    ports:
+      - "80:80"
+
+  # Minimal, purpose-built Updater-Service (Section 9.10 / 20): the only
+  # component with Podman access, so a compromised/buggy backend can
+  # never touch the host. Reachable only on the internal network -- no
+  # published ports. See deploy/updater/ and scripts/updater-trigger.sh.
+  updater:
+    build:
+      context: ..
+      dockerfile: deploy/updater/Dockerfile
+    container_name: schoolprint-updater
+    restart: unless-stopped
+    security_opt:
+      - label=disable
+    environment:
+      SCHOOLPRINT_COMPOSE_FILE: /deploy/compose.yaml
+    volumes:
+      - /run/podman/podman.sock:/run/podman/podman.sock
+      - ./compose.yaml:/deploy/compose.yaml:ro
+    networks:
+      - schoolprint-net
+
+networks:
+  schoolprint-net:
+    driver: bridge
+
+volumes:
+  schoolprint-postgres:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /var/lib/schoolprint/postgres
+  schoolprint-uploads:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /var/lib/schoolprint/uploads
+  schoolprint-sliced:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /var/lib/schoolprint/sliced
+  schoolprint-previews:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /var/lib/schoolprint/previews
+  schoolprint-backups:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /var/lib/schoolprint/backups
